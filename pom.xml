@@ -20,7 +20,18 @@
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<compilerArgument>-Xlint:all</compilerArgument>
 					<showDeprecation>true</showDeprecation>
-
+					
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>br.com.ithappens.carrinho.Main</mainClass>
+						</manifest>
+					</archive>
 				</configuration>
 			</plugin>
 		</plugins>
