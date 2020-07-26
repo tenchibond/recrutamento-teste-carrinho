@@ -1,13 +1,20 @@
 package br.com.ithappens.carrinho;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Classe responsável pela criação e recuperação dos carrinhos de compras.
  */
 public class CarrinhoComprasFactory {
+	
+	private List<CarrinhoCompras> lstCarrinhos;
 
 	public CarrinhoComprasFactory() {
+		lstCarrinhos = new ArrayList<>();
 	}
 
     /**
@@ -19,7 +26,18 @@ public class CarrinhoComprasFactory {
      * @return CarrinhoCompras
      */
     public CarrinhoCompras criar(String identificacaoCliente) {
-
+		CarrinhoCompras carrinho = null;
+		if(lstCarrinhos != null && identificacaoCliente != null){
+			carrinho = lstCarrinhos.stream()
+					.filter(c -> c.getIdentificadorCarrinho().equalsIgnoreCase(identificacaoCliente))
+					.findAny()
+					.orElse(null);
+			if(carrinho == null) {
+				carrinho = new CarrinhoCompras(identificacaoCliente);
+				lstCarrinhos.add(carrinho);
+			}
+		}
+		return carrinho;
     }
 
     /**
@@ -32,7 +50,15 @@ public class CarrinhoComprasFactory {
      * @return BigDecimal
      */
     public BigDecimal getValorTicketMedio() {
-
+		BigDecimal valorTotalCarrinhos = lstCarrinhos.stream()
+				.map(x -> x.getValorTotal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		
+		BigDecimal qtdCarrinhos = new BigDecimal(lstCarrinhos.size());
+		BigDecimal valorTicketMedio = valorTotalCarrinhos.divide(qtdCarrinhos, 2,
+				RoundingMode.HALF_EVEN);
+		
+		return valorTicketMedio;
     }
 
     /**
@@ -44,6 +70,9 @@ public class CarrinhoComprasFactory {
      * e false caso o cliente não possua um carrinho.
      */
     public boolean invalidar(String identificacaoCliente) {
-
+		if (lstCarrinhos.removeIf(c -> c.getIdentificadorCarrinho().equalsIgnoreCase(identificacaoCliente))) {
+			return true;
+		}
+		return false;
     }
 }

@@ -2,12 +2,22 @@ package br.com.ithappens.carrinho;
 
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Classe que representa o carrinho de compras de um cliente.
  */
 public class CarrinhoCompras {
+	
+	private List<Item> lstItensCarrinho;
+	private String identificadorCarrinho;
+	
+	public CarrinhoCompras(String identificadorCarrinho) {
+		this.identificadorCarrinho = identificadorCarrinho;
+		lstItensCarrinho = new ArrayList<>();
+	}
 
     /**
      * Permite a adição de um novo item no carrinho de compras.
@@ -24,7 +34,18 @@ public class CarrinhoCompras {
      * @param quantidade
      */
     public void adicionarItem(Produto produto, BigDecimal valorUnitario, int quantidade) {
-
+		Item item = lstItensCarrinho.stream()
+				.filter(i -> i.getProduto().getCodigo() == produto.getCodigo())
+				.findAny()
+				.orElse(null);
+		if(item != null) {
+			int novaQtd = item.getQuantidade() + quantidade;
+			BigDecimal novoValor = (item.getValorUnitario() != valorUnitario) ? valorUnitario : item.getValorUnitario();
+			lstItensCarrinho.remove(item);
+			lstItensCarrinho.add(new Item(produto, novoValor, novaQtd));
+		} else {
+			lstItensCarrinho.add(new Item(produto, valorUnitario, quantidade));
+		}
     }
 
     /**
@@ -35,7 +56,10 @@ public class CarrinhoCompras {
      * caso o produto não exista no carrinho.
      */
     public boolean removerItem(Produto produto) {
-
+		if(produto != null) {
+			return lstItensCarrinho.removeIf(i -> i.getProduto().getCodigo() == produto.getCodigo());
+		}
+		return false;
     }
 
     /**
@@ -48,7 +72,11 @@ public class CarrinhoCompras {
      * caso o produto não exista no carrinho.
      */
     public boolean removerItem(int posicaoItem) {
-
+		Item removido = lstItensCarrinho.remove(posicaoItem);
+		if(removido != null) {
+			return true;
+		}
+		return false;
     }
 
     /**
@@ -58,7 +86,9 @@ public class CarrinhoCompras {
      * @return BigDecimal
      */
     public BigDecimal getValorTotal() {
-
+		return lstItensCarrinho.stream()
+				.map(x -> x.getValorTotal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
@@ -67,6 +97,15 @@ public class CarrinhoCompras {
      * @return itens
      */
     public Collection<Item> getItens() {
-
+		return lstItensCarrinho;
     }
+	
+	/**
+	 * Retorna o identificador do carrinho de compras.
+	 * 
+	 * @return String
+	 */
+	public String getIdentificadorCarrinho() {
+		return this.identificadorCarrinho;
+	}
 }
